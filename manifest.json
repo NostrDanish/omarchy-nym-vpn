@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "master.nym-vpn",
   "name": "Nym VPN",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "author": "0xPrivacy",
   "license": "MIT",
-  "description": "Theme-native Nym control: NYM chip, route globe, and entry or exit country selection.",
+  "description": "Full Nym control: account, quick-connect, favorites, DNS, SOCKS5, split-tunnel, toggles, diagnostics, route globe, traffic stats.",
   "kinds": ["bar-widget"],
   "entryPoints": {
     "barWidget": "Panel.qml"
