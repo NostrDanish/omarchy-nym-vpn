@@ -95,6 +95,10 @@ def load_json(path, fallback):
 def save_json(path, payload):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=True) + "\n")
+    try:
+        os.chmod(path, 0o600)  # location caches must not be world-readable
+    except OSError:
+        pass
 
 
 def kv(text):
@@ -964,7 +968,10 @@ def login():
         return {"ok": False, "error": "missing mnemonic"}
     mnemonic = " ".join(mnemonic.split())
     safe = mnemonic.replace('"', "")
-    return simple_action([f'account set "{safe}"', "account get"], 60, "Account login sent")
+    payload = simple_action([f'account set "{safe}"', "account get"], 60, "Account login sent")
+    if not payload.get("ok") and mnemonic in payload.get("error", ""):
+        payload["error"] = payload["error"].replace(mnemonic, "***")
+    return payload
 
 
 def logout():

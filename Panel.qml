@@ -570,6 +570,7 @@ Panel {
       }
     }
     onExited: {
+      loginProc.environment = ({}) // never keep the mnemonic on the Process object
       root.actionRunning = false
       root.runFull()
     }

@@ -12,7 +12,11 @@ The bar chip reads `NYM` and opens the full control panel:
 - **Diagnostic** — one-click daemon diagnostic report (can take a few minutes).
 - **Traffic stats** — interface rates, totals, and gateway ping while connected.
 
-The location shown as **YOU** is best-effort: the helper queries Nym's public geo-IP endpoint when disconnected, then falls back to cached location or timezone data. While connected, it uses cached location rather than reporting the VPN exit as your position.
+The location shown as **YOU** is best-effort: the helper queries Nym's public geo-IP endpoint when disconnected, then falls back to cached location or timezone data. While connected, it uses cached location rather than reporting the VPN exit as your position. The geo/route caches are written with 0600 permissions.
+
+## Alongside the official NymVPN app
+
+The plugin and the official app talk to the same daemon and can run at the same time. The daemon holds one shared config: whichever side changes a setting last is what both sides then show — the panel always re-reads daemon state after every action, so it never displays stale local overrides. The bar chip and traffic stats work even while the app owns the connection, because they read kernel interface state instead of the daemon socket. Connect or disconnect from either side; the other side updates via daemon events.
 
 ## Privacy
 
