@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "master.nym-vpn",
+  "id": "io.github.nostrdanish.nym-vpn",
   "name": "Nym VPN",
   "version": "2.0.0",
   "author": "0xPrivacy",

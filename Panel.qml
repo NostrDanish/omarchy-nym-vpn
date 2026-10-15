@@ -8,8 +8,8 @@ import qs.Ui
 
 Panel {
   id: root
-  moduleName: "master.nym-vpn"
-  ipcTarget: "master.nym-vpn"
+  moduleName: "io.github.nostrdanish.nym-vpn"
+  ipcTarget: "io.github.nostrdanish.nym-vpn"
   manageIpc: true
 
   readonly property string helper: decodeURIComponent(Qt.resolvedUrl("status.py").toString().replace(/^file:\/\//, ""))

@@ -31,8 +31,8 @@ When the tunnel is down, the widget's 30-second status poll calls `https://nymvp
 ## Install into Omarchy
 
 ```bash
-omarchy plugin enable master.nym-vpn
-omarchy bar put master.nym-vpn --section right
+omarchy plugin enable io.github.nostrdanish.nym-vpn
+omarchy bar put io.github.nostrdanish.nym-vpn --section right
 ```
 
 Keys in the panel: `C` connect, `D` disconnect, `R` refresh, `O` open app, `Q` fastest WireGuard, `X` fastest mixnet. Daemon actions run only after an explicit user action, never from the status timer.
@@ -52,6 +52,14 @@ echo 'polkit.addRule(function(a,s){ if (a.id == "com.nymvpn.vpnd.unix-access" &&
 ```
 
 Without one of these, the bar chip and traffic stats still work (they read interface state only), but panel actions wait for an authorization nobody can answer; the panel shows the same fix when that happens. The recovery phrase is passed to the helper through the process environment, never via command-line arguments.
+
+## Remove
+
+```bash
+omarchy plugin disable io.github.nostrdanish.nym-vpn
+```
+
+If a widget entry remains on the bar, remove the Nym VPN block from the bar layout (editable in Omarchy's bar settings, stored in `~/.config/omarchy/shell.json`). This only detaches the widget and the plugin; the NymVPN daemon and app packages stay installed. To remove those too: `sudo pacman -R nym-vpn-app-bin nym-vpnd-bin && sudo systemctl disable --now nym-vpnd.service`. Local caches at `~/.cache/omarchy/nym-*.json` can be deleted freely.
 
 ## Licensing
 
