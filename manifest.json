@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "master.nym-vpn",
+  "name": "Nym VPN",
+  "version": "1.4.0",
+  "author": "0xPrivacy",
+  "license": "MIT",
+  "description": "Theme-native Nym control: NYM chip, route globe, and entry or exit country selection.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Nym VPN",
+    "description": "Shows the Nym tunnel and opens the app. Click to connect, disconnect, or inspect the route.",
+    "category": "Network",
+    "allowMultiple": false,
+    "defaultSection": "left",
+    "aliases": ["nym", "vpn", "mixnet"]
+  }
+}
