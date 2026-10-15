@@ -1,4 +1,6 @@
-# Nym VPN for Omarchy
+# NymVPN for Omarchy
+
+![NymVPN panel](preview.png)
 
 A theme-native Omarchy bar widget and route panel for the NymVPN daemon. It uses the active Omarchy theme and does not include account credentials.
 

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "io.github.nostrdanish.nym-vpn",
-  "name": "Nym VPN",
+  "name": "NymVPN",
   "version": "2.0.0",
   "author": "0xPrivacy",
   "license": "MIT",
-  "description": "Full Nym control: account, quick-connect, favorites, DNS, SOCKS5, split-tunnel, toggles, diagnostics, route globe, traffic stats.",
+  "description": "NymVPN full control from the Omarchy bar: account and quota, quick-connect, favorites and recents, entry/exit country pick, 2-hop mode, DNS presets, SOCKS5, split-tunnel, ad-block toggles, diagnostics, route globe, and live traffic stats.",
   "kinds": ["bar-widget"],
   "entryPoints": {
     "barWidget": "Panel.qml"
