@@ -33,15 +33,21 @@ omarchy bar put master.nym-vpn --section right
 
 Keys in the panel: `C` connect, `D` disconnect, `R` refresh, `O` open app, `Q` fastest WireGuard, `X` fastest mixnet. Daemon actions run only after an explicit user action, never from the status timer.
 
-## Polkit note
+## Daemon access note
 
-The daemon gates socket access behind `com.nymvpn.vpnd.unix-access` (`auth_self`). On a desktop without a polkit agent, allow the active session once:
+The daemon accepts local clients from the **`nym-vpn` UNIX group** (or via a polkit prompt that no agent can answer on a minimal box). Add yourself once:
+
+```bash
+sudo usermod -aG nym-vpn $USER
+```
+
+Then log out and back in so the bar picks up the new group. Alternative without re-login:
 
 ```bash
 echo 'polkit.addRule(function(a,s){ if (a.id == "com.nymvpn.vpnd.unix-access" && s.active) return polkit.Result.YES; });' | sudo tee /etc/polkit-1/rules.d/49-nymvpn.rules && sudo systemctl try-restart polkit
 ```
 
-Without this rule the bar chip and traffic stats still work (they read interface state only), but panel actions wait for an authorization nobody can answer; the panel shows this same fix when that happens. The recovery phrase is passed to the helper through the process environment, never via command-line arguments.
+Without one of these, the bar chip and traffic stats still work (they read interface state only), but panel actions wait for an authorization nobody can answer; the panel shows the same fix when that happens. The recovery phrase is passed to the helper through the process environment, never via command-line arguments.
 
 ## Licensing
 

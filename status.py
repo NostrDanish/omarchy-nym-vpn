@@ -33,7 +33,8 @@ CODE = re.compile(r"^[A-Z]{2}$")
 HOP = re.compile(r"([0-9A-Za-z.:]+):(\d+)\s+\[([A-Za-z0-9]+)\]")
 ARROW = re.compile(r"\s+(?:→|->)\s+")
 AUTH_FIX = (
-    "Polkit blocked the daemon. Run once: "
+    "Daemon access blocked. Fix once: sudo usermod -aG nym-vpn $USER "
+    "then log out and back in. Alternative: "
     "echo 'polkit.addRule(function(a,s){ if (a.id == "
     '"com.nymvpn.vpnd.unix-access" && s.active) return polkit.Result.YES; '
     "});' | sudo tee /etc/polkit-1/rules.d/49-nymvpn.rules && "
