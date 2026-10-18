@@ -41,6 +41,15 @@ AUTH_FIX = (
     "sudo systemctl try-restart polkit"
 )
 
+# nym-vpnd's Linux policy-routing identity (nym-vpn-lib/src/lib.rs).
+# TUNNEL_FWMARK = TUNNEL_TABLE_ID = 0x14d. The daemon installs
+# "not from all fwmark 0x14d lookup 333" rules plus a default route in
+# table 333 only while a tunnel is established, and removes both on
+# disconnect — so these are proof of a live Nym tunnel, unlike the mere
+# presence of a tun0/tun1 interface (any VPN, or a leftover device).
+NYM_FWMARK = "0x14d"
+NYM_TABLE = "333"
+
 NAMES = {
     "AE": "United Arab Emirates", "AL": "Albania", "AM": "Armenia", "AR": "Argentina",
     "AT": "Austria", "AU": "Australia", "AZ": "Azerbaijan", "BA": "Bosnia",
@@ -548,17 +557,52 @@ def live_status():
     }
 
 
+def nym_tunnel():
+    """Proof of an established Nym tunnel, from kernel policy routing alone.
+
+    Returns (established, default_dev, all_devs). nym-vpnd installs
+    "not from all fwmark 0x14d lookup 333" rules plus a default route in
+    table 333 only while a tunnel is up, and tears both down on disconnect
+    (route_handler.rs remove_routes). A leftover or foreign tun0/tun1 never
+    satisfies this, which is exactly the false-positive the old interface
+    check had. The daemon socket is never touched, so timers stay polkit-safe.
+    """
+    _, rules, _ = run(["ip", "rule"], 4)
+    has_rule = any(
+        "fwmark " + NYM_FWMARK in row and "lookup " + NYM_TABLE in row
+        for row in rules.splitlines()
+    )
+    if not has_rule:
+        return False, "", []
+    code, routes, _ = run(["ip", "route", "show", "table", NYM_TABLE], 4)
+    if code != 0 or not routes.strip():
+        return False, "", []
+    devs = []
+    default_dev = ""
+    for row in routes.splitlines():
+        m = re.search(r"\bdev\s+(\S+)", row)
+        if not m:
+            continue
+        dev = m.group(1)
+        if dev not in devs:
+            devs.append(dev)
+        if row.split(None, 1)[0] == "default":
+            default_dev = dev
+    if not default_dev:
+        return False, "", devs
+    return True, default_dev, devs
+
+
 def passive():
     daemon_code, daemon_out, _ = run(["systemctl", "is-active", "nym-vpnd.service"], 4)
     daemon = daemon_out.strip() if daemon_code == 0 else "inactive"
-    _, links, _ = run(["ip", "-br", "link"], 4)
-    up = False
-    for row in links.splitlines():
-        parts = row.split()
-        if len(parts) >= 2 and parts[0] in {"tun0", "tun1"} and "UP" in row:
-            up = True
-            break
-    connected = daemon == "active" and up
+    established, default_dev, _ = nym_tunnel()
+    if established:
+        # The routed device must also be UP; a torn-down interface with a
+        # stale route must not count.
+        _, links, _ = run(["ip", "-br", "link", "show", "dev", default_dev], 4)
+        established = bool(links.strip()) and "UP" in links
+    connected = daemon == "active" and established
 
     # NEVER call nym-vpnc here. The daemon's polkit rule is auth_self and can
     # hang a background timer with a prompt nobody answers. The route comes
@@ -605,7 +649,7 @@ def route_live():
     live = live_status()
     if not live:
         # Even the no-auth status path can hang behind the polkit gate while
-        # the tunnel is up; interface state already answers "connected".
+        # the tunnel is up; kernel routing state already answers "connected".
         return payload
     by_id, by_ip = node_lookup()
     entry_node = resolve_hop(live["entryId"], live["entryHost"], by_id, by_ip)
@@ -1069,9 +1113,14 @@ def diag():
 # ---------------------------------------------------------------------------
 
 def iface_bytes():
+    # Count the tunnel devices Nym actually routes through (from its policy
+    # table). Fall back to the historical tun0/tun1 guess only when no Nym
+    # routing state exists, so stats never silently read a foreign VPN.
+    _, _, devs = nym_tunnel()
+    names = devs or ["tun0", "tun1"]
     total_rx = 0
     total_tx = 0
-    for iface in ("tun0", "tun1"):
+    for iface in names:
         base = Path("/sys/class/net") / iface / "statistics"
         try:
             total_rx += int((base / "rx_bytes").read_text().strip())
